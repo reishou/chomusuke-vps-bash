@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Load common utils
-source "$(dirname "$0")/common/utils.sh"
+source "$(dirname "$0")/utils.sh"
 
 print_header "Create Non-Root User"
 
