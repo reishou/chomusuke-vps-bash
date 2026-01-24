@@ -48,7 +48,7 @@ echo ""
 log_success "User creation completed!"
 echo "Username: $NEW_USER"
 echo "Sudo: Yes"
-echo "NOPASSWD: $(if ask_confirm "" "Y" >/dev/null; then echo "Yes"; else echo "No"; fi)"  # Lấy lại giá trị trước đó
+echo "NOPASSWD: $([[ "$nopasswd_choice" != "n" ]] && echo "Yes" || echo "No")"
 echo ""
 echo "You can now login as this user:"
 echo "  ssh $NEW_USER@your-vps-ip"
