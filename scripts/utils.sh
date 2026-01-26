@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # utils.sh - Common utility functions for Chomusuke Deploy scripts
-# Place this file in scripts/common/utils.sh
-# Usage: source "$(dirname "$0")/common/utils.sh"
+# Place this file in scripts/utils.sh
+# Usage: source "$(dirname "$0")/utils.sh"
 
 # === Colors ===
 RED='\033[0;31m'
@@ -15,7 +15,7 @@ NC='\033[0m'
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }  # Chỉ log, không exit
+log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
 
 # === Checks ===
 check_root() {

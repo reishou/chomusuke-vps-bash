@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run setup script (dry-run)
-        run: bash scripts/common/setup-common-stack.sh --dry-run
+        run: bash scripts/setup-common-stack.sh --dry-run

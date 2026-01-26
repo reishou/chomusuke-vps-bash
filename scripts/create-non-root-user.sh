@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Load common utils
-source "$(dirname "$0")/utils.sh"
+# === create-non-root-user.sh ===
+# Purpose: Create a new non-root user with sudo privileges
+# This script is independent and can be run anytime
+
+# Load utils (require running from repo root to find utils.sh)
+if [ ! -f "$(pwd)/utils.sh" ]; then
+    echo -e "\033[0;31m[ERROR]\033[0m This script must be run from the repository root directory."
+    echo "Please cd into chomusuke-vps-bash/ then run:"
+    echo "  sudo bash scripts/create-non-root-user.sh"
+    exit 1
+fi
+
+source "$(pwd)/utils.sh"
 
 print_header "Create Non-Root User"
 
+# Require root privileges
 check_root
 
 log_info "This script creates a new non-root user with sudo privileges."
 
 # === Ask for new username ===
-read -p "Enter new non-root username (default: vps-user): " input_user
+read -r -p "Enter new non-root username (default: vps-user): " input_user
 NEW_USER="${input_user:-vps-user}"
 
 # === Check if user already exists ===
@@ -35,11 +47,14 @@ log_success "User '$NEW_USER' added to sudo group."
 
 # === Ask for NOPASSWD sudo ===
 echo ""
+nopasswd_choice=""
 if ask_confirm "Do you want $NEW_USER to run sudo without password?" "Y"; then
     echo "$NEW_USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$NEW_USER >/dev/null
     chmod 0440 /etc/sudoers.d/$NEW_USER
+    nopasswd_choice="y"
     log_success "NOPASSWD enabled for $NEW_USER (convenient but less secure)."
 else
+    nopasswd_choice="n"
     log_info "NOPASSWD skipped. User will need to enter password for sudo."
 fi
 

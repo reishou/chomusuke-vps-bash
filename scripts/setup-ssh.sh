@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # === setup-ssh-vps.sh ===
-# Purpose: Generate SSH key, create config alias, copy key to VPS (all optional)
+# Purpose: Generate SSH key, create config alias, copy key to VPS, optional change SSH port (all optional)
 # Run from local: ssh root@YOUR_VPS_IP "bash -s" < setup-ssh-vps.sh
 
 RED='\033[0;31m'
@@ -15,7 +15,8 @@ echo -e "${BLUE}=== SSH VPS Setup Tool ===${NC}"
 echo "This script helps you:"
 echo "1. Generate a new SSH key (optional)"
 echo "2. Create a new SSH config alias for your VPS (optional)"
-echo "3. Copy the public key to the VPS (optional)"
+echo "3. Change SSH port on VPS (optional, recommended for security)"
+echo "4. Copy the public key to the VPS (optional)"
 echo "All steps are optional (y/n, default y)."
 echo ""
 
@@ -87,7 +88,6 @@ EOF
 
     MAIN_CONFIG="$HOME/.ssh/config"
     if [ ! -f "$MAIN_CONFIG" ] || ! grep -q "Include ~/.ssh/config.d/*.conf" "$MAIN_CONFIG" 2>/dev/null; then
-        # shellcheck disable=SC2129
         echo "" >> "$MAIN_CONFIG"
         echo "# Include custom configs from config.d" >> "$MAIN_CONFIG"
         echo "Include ~/.ssh/config.d/*.conf" >> "$MAIN_CONFIG"
@@ -104,6 +104,42 @@ else
     else
         echo "Skipping SSH config creation."
     fi
+fi
+
+# === Optional: Change SSH port on VPS ===
+echo ""
+read -r -p "Do you want to change the SSH port on this VPS (recommended for security)? [Y/n]: " change_port_choice
+change_port_choice=${change_port_choice:-Y}
+change_port_choice=$(echo "$change_port_choice" | tr '[:upper:]' '[:lower:]')
+
+if [[ "$change_port_choice" == "y" || "$change_port_choice" == "" ]]; then
+    read -r -p "Enter new SSH port (recommended: 2204, 2222, etc.): " NEW_PORT
+    NEW_PORT="${NEW_PORT:-2204}"
+
+    echo -e "${YELLOW}WARNING: Changing SSH port will disconnect your current SSH session!${NC}"
+    echo "After change, SSH using: ssh -p $NEW_PORT $USER@$HOSTNAME"
+    echo "Make sure you have another way to access (console, rescue mode, or new port)."
+    read -r -p "Continue? [y/N]: " confirm_change
+    confirm_change=$(echo "$confirm_change" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$confirm_change" == "y" ]]; then
+        echo "Changing SSH port to $NEW_PORT on VPS..."
+        ssh "$USER@$HOSTNAME" -p "$PORT" "sed -i 's/^#*Port .*/Port $NEW_PORT/' /etc/ssh/sshd_config && systemctl restart ssh || systemctl restart sshd" && \
+            echo -e "${GREEN}SSH port changed to $NEW_PORT on VPS.${NC}" || \
+            echo -e "${RED}Failed to change port on VPS.${NC}"
+
+        # Update local config alias to new port
+        if [ -f "$CONFIG_FILE" ]; then
+            sed -i "s/Port .*/Port $NEW_PORT/" "$CONFIG_FILE"
+            echo "Local config alias updated to use port $NEW_PORT."
+        fi
+
+        echo "Reconnect using: ssh -p $NEW_PORT $USER@$HOSTNAME"
+    else
+        echo "Port change cancelled. Keeping current port."
+    fi
+else
+    echo "SSH port remains unchanged."
 fi
 
 # Step 3: Copy public key to VPS?
@@ -146,7 +182,7 @@ echo "Test your connection:"
 if [ -n "${ALIAS:-}" ]; then
     echo "  ssh $ALIAS"
 else
-    echo "  ssh -i $PRIV_KEY $USER@$HOSTNAME -p $PORT"
+    echo "  ssh -i $PRI_KEY $USER@$HOSTNAME -p $PORT"
 fi
 echo ""
 echo "Thank you for using Chomusuke Deploy Tools!"
