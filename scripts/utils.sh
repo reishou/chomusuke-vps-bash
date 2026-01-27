@@ -71,10 +71,18 @@ update_package() {
 ask_confirm() {
     local prompt="$1"
     local default="${2:-Y}"
-    read -p "$prompt [Y/n]: " choice
-    choice=${choice:-$default}
-    choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
-    [[ "$choice" == "y" || "$choice" == "" ]]
+    local response
+
+    printf "%s [Y/n] " "$prompt" >&2
+    read -p "$prompt [Y/n] " -r response
+
+    response=${response:-$default}
+
+    if [[ "$response" =~ ^[Yy]$ || "$response" =~ ^[Yy][Ee][Ss]$ || "$response" == "" && "$default" == "Y" ]]; then
+        return 0  # true
+    else
+        return 1  # false
+    fi
 }
 
 user_exists() { id "$1" &>/dev/null; }
