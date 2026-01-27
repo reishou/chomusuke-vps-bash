@@ -32,7 +32,6 @@ log_info "- Set timezone"
 log_info "- Set hostname"
 log_info "- Create swap file"
 log_info "- Enable NTP time sync"
-log_info "- Install Fail2Ban"
 echo ""
 log_warning "All steps are optional (y/n, default y). You can skip any step."
 echo ""
@@ -141,24 +140,6 @@ if ask_confirm "Do you want to enable NTP time synchronization?" "Y"; then
     log_success "NTP time sync enabled."
 else
     log_info "NTP setup skipped."
-fi
-
-# Step 6: Install Fail2Ban
-echo ""
-if ask_confirm "Do you want to install Fail2Ban (protect against brute-force attacks)?" "Y"; then
-    if command -v fail2ban-client >/dev/null 2>&1; then
-        log_info "Fail2Ban already installed. Skipping."
-    else
-        log_info "Installing Fail2Ban..."
-        apt update -y
-        apt install -y fail2ban
-    fi
-
-    log_info "Fail2Ban installed and running."
-    systemctl status fail2ban --no-pager | head -n 5
-    log_success "Fail2Ban setup completed."
-else
-    log_info "Fail2Ban installation skipped."
 fi
 
 # Final instructions
