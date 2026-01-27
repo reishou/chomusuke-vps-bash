@@ -2,7 +2,7 @@
 set -euo pipefail
 
 QUIET_MODE=0
-if [[ "${1:-}" == "--no-footer" ]]; then
+if [[ "${1:-}" == "--quiet" ]]; then
   QUIET_MODE=1
   shift
 fi
