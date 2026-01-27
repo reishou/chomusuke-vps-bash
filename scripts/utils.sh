@@ -109,3 +109,45 @@ print_footer() {
     echo -e "${GREEN}====================================${NC}"
     echo ""
 }
+
+run_script_quiet() {
+    local script="$1"
+    local name="$2"
+
+    print_header "Starting: $name"
+
+    if $QUIET; then
+        bash "$script" --quiet 2>&1 | sed '/^─* Setup completed ─*/d; /^Footer .* removed/d' || true
+    else
+        bash "$script"
+    fi
+
+    local status=$?
+    if [ $status -eq 0 ]; then
+        print_success "Completed: $name"
+        echo ""
+    else
+        print_error "Failed: $name (exit code $status)"
+        exit $status
+    fi
+}
+
+print_success() {
+    echo -e "\033[0;32m✓ $1\033[0m"
+}
+
+print_error() {
+    echo -e "\033[0;31m✗ $1\033[0m" >&2
+}
+
+print_info() {
+    echo -e "\033[1;33m$1\033[0m"
+}
+
+check_file_exists() {
+    local path="$1"
+    if [[ ! -f "$path" ]]; then
+        print_error "File not found → $path"
+        exit 1
+    fi
+}
