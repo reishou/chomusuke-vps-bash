@@ -142,6 +142,35 @@ else
     log_info "NTP setup skipped."
 fi
 
+# ────────────────────────────────────────────────
+# Install essential CLI tools
+# ────────────────────────────────────────────────
+log_info "Installing essential command-line tools..."
+
+# Refresh package list
+apt update -y
+
+# Install the packages
+apt install -y \
+    curl \
+    wget \
+    htop \
+    ncdu \
+    tree \
+    unzip \
+    zip \
+    net-tools \
+    ca-certificates \
+    apt-transport-https \
+    software-properties-common
+
+# Optional: Quick verification of key packages
+echo -e "${YELLOW}Quick verification:${NC}"
+command -v curl >/dev/null && echo "  curl: OK" || echo "  curl: Not found"
+command -v git  >/dev/null && echo "  git:  OK" || echo "  git:  Not found"
+command -v htop >/dev/null && echo "  htop: OK" || echo "  htop: Not found"
+echo ""
+
 # Final instructions
 if [[ $QUIET_MODE -eq 0 ]]; then
   echo ""
