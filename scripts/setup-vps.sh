@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # Source utility functions
-source ./util.sh 2>/dev/null || source ./scripts/util.sh 2>/dev/null || {
+source ./utils.sh 2>/dev/null || source ./scripts/utils.sh 2>/dev/null || {
     echo "Error: util.sh not found in ./ or ./scripts/" >&2
     exit 1
 }
