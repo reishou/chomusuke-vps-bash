@@ -12,15 +12,15 @@ fi
 # Run on VPS after cloning repo: sudo bash scripts/basic-server-setup.sh
 # Based on: https://reishou.gitbook.io/n/vps/getting-started/basic-server-setup
 
-# Load utils (require running from repo root)
-if [ ! -f "$(pwd)/utils.sh" ]; then
-    echo -e "\033[0;31m[ERROR]\033[0m This script must be run from the repository root directory."
-    echo "cd into chomusuke-vps-bash/ then run:"
-    echo "  sudo bash scripts/basic-server-setup.sh"
+# Load utils
+if [ ! -f "$(dirname "$0")/utils.sh" ]; then
+    echo -e "\033[0;31m[ERROR]\033[0m utils.sh not found in the scripts/ directory.."
+    echo "Expected path: $(dirname "$0")/utils.sh"
+    echo "Please check if the file exists in your repository."
     exit 1
 fi
 
-source "$(pwd)/utils.sh"
+source "$(dirname "$0")/utils.sh"
 
 print_header "Basic Server Setup"
 

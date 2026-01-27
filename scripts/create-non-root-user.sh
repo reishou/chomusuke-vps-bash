@@ -5,15 +5,15 @@ set -euo pipefail
 # Purpose: Create a new non-root user with sudo privileges
 # This script is independent and can be run anytime
 
-# Load utils (require running from repo root to find utils.sh)
-if [ ! -f "$(pwd)/utils.sh" ]; then
-    echo -e "\033[0;31m[ERROR]\033[0m This script must be run from the repository root directory."
-    echo "Please cd into chomusuke-vps-bash/ then run:"
-    echo "  sudo bash scripts/create-non-root-user.sh"
+# Load utils
+if [ ! -f "$(dirname "$0")/utils.sh" ]; then
+    echo -e "\033[0;31m[ERROR]\033[0m utils.sh not found in the scripts/ directory.."
+    echo "Expected path: $(dirname "$0")/utils.sh"
+    echo "Please check if the file exists in your repository."
     exit 1
 fi
 
-source "$(pwd)/utils.sh"
+source "$(dirname "$0")/utils.sh"
 
 print_header "Create Non-Root User"
 
