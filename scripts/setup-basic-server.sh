@@ -52,7 +52,7 @@ fi
 # === Optional: Set timezone with filter ===
 echo ""
 if ask_confirm "Do you want to set timezone?" "Y"; then
-    log_info "Type part of timezone (e.g. 'Asia', 'Ho_Chi', 'Europe') to filter, or Enter to list all."
+    log_info "Type part of timezone (e.g. 'Asia', 'Tokyo', 'Europe') to filter, or Enter to list all."
 
     while true; do
         read -r -p "Filter timezone: " filter
