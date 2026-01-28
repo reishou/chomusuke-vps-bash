@@ -8,8 +8,8 @@
 set -euo pipefail
 
 # Source utils
-if [ -f "$(dirname "$0")/utils.sh" ]; then
-    source "$(dirname "$0")/utils.sh"
+if [ -f "./scripts/utils.sh" ]; then
+    source "./scripts/utils.sh"
 else
     echo -e "\033[0;31m[ERROR]\033[0m utils.sh not found in ./scripts/"
     exit 1
