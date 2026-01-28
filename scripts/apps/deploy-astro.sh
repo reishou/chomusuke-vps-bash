@@ -46,8 +46,9 @@ read -r -p "Enter the Git repository URL (e.g., https://github.com/user/my-astro
 [ -z "$git_url" ] && log_error "Git URL cannot be empty."
 
 # Basic URL validation
-if ! [[ "$git_url" =~ [](https://|git://|git@) ]]; then
-    log_error "Invalid Git URL. Must start with https://, git:// or git@ (e.g., git@github.com:user/repo.git)."
+if ! [[ "$git_url" =~ [](https://|git://|git@[a-zA-Z0-9.-]+:)[a-zA-Z0-9./_-]+$ ]]; then
+    log_error "Invalid Git URL. Must be a valid HTTPS, git:// or SSH URL (e.g., git@github.com:user/repo.git)."
+    exit 1
 fi
 
 # Extract default folder name from repo URL
