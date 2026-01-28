@@ -45,9 +45,9 @@ fi
 read -r -p "Enter the Git repository URL (e.g., https://github.com/user/my-astro-site.git): " git_url
 [ -z "$git_url" ] && log_error "Git URL cannot be empty."
 
-# Basic URL validation
 # Basic Git URL validation (support HTTPS, git://, and SSH git@github.com:user/repo.git)
-if ! [[ "$git_url" =~ [](https://|git://|git@[^:]+:) ]]; then
+# Support HTTPS, git protocol, and SSH (git@github.com:user/repo.git)
+if ! [[ "$git_url" =~ ^((git|ssh|http(s)?)|(git@[\w.]+))(:(\\/\\/)?)([\w.@:\\/-~]+)(\.git)?(\\/)?$ ]]; then
     log_error "Invalid Git URL. Must start with https://, git:// or git@ (e.g., git@github.com:user/repo.git)."
     exit 1
 fi
