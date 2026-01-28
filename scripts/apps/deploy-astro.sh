@@ -202,8 +202,9 @@ fi
 TEMPLATE_PATH="./config/nginx/astro.conf.example"
 NGINX_CONF="/etc/nginx/sites-available/$domain"
 
-[ ! -f "$TEMPLATE_PATH" ] && log_error "Template not found."
-
+log_info "Current directory: $(pwd)"
+log_info "Template path: $TEMPLATE_PATH"
+ls -l "$TEMPLATE_PATH" || log_error "Template file missing or inaccessible"
 sudo cp "$TEMPLATE_PATH" "$NGINX_CONF"
 sudo sed -i "s|{DOMAIN}|$domain|g" "$NGINX_CONF"
 sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$NGINX_CONF"
