@@ -10,10 +10,11 @@
 set -euo pipefail
 
 # Source utility functions
-if [ -f "./utils.sh" ]; then
-    source "./utils.sh"
+if [ -f "$(dirname "$0")/utils.sh" ]; then
+    source "$(dirname "$0")/utils.sh"
 else
-    log_error "utils.sh not found in current directory."
+    echo "Error: util.sh not found in ./ or ./scripts/" >&2
+    exit 1
 fi
 
 echo -e "${GREEN}=== VPS SSH Key Setup Script ===${NC}"
