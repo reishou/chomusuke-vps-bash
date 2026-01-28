@@ -145,31 +145,32 @@ fi
 # ────────────────────────────────────────────────
 # Install essential CLI tools
 # ────────────────────────────────────────────────
-log_info "Installing essential command-line tools..."
-
-# Refresh package list
-apt update -y
-
-# Install the packages
-apt install -y \
-    curl \
-    wget \
-    htop \
-    ncdu \
-    tree \
-    unzip \
-    zip \
-    net-tools \
-    ca-certificates \
-    apt-transport-https \
-    software-properties-common
-
-# Optional: Quick verification of key packages
-echo -e "${YELLOW}Quick verification:${NC}"
-command -v curl >/dev/null && echo "  curl: OK" || echo "  curl: Not found"
-command -v git  >/dev/null && echo "  git:  OK" || echo "  git:  Not found"
-command -v htop >/dev/null && echo "  htop: OK" || echo "  htop: Not found"
 echo ""
+if ask_confirm "Do you want to installing essential command-line tools?" "Y"; then
+    log_info "Installing essential command-line tools..."
+    apt update -y
+    apt install -y \
+        curl \
+        wget \
+        htop \
+        ncdu \
+        tree \
+        unzip \
+        zip \
+        net-tools \
+        ca-certificates \
+        apt-transport-https \
+        software-properties-common
+
+    echo -e "${YELLOW}Quick verification:${NC}"
+    command -v curl >/dev/null && echo "  curl: OK" || echo "  curl: Not found"
+    command -v git  >/dev/null && echo "  git:  OK" || echo "  git:  Not found"
+    command -v htop >/dev/null && echo "  htop: OK" || echo "  htop: Not found"
+
+    log_success "Essential CLI tools installed."
+else
+    log_info "Essential CLI tools installation skipped."
+fi
 
 # Final instructions
 if [[ $QUIET_MODE -eq 0 ]]; then
