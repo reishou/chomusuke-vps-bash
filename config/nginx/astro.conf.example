@@ -3,6 +3,7 @@
 
 server {
     listen 80;
+    listen [::]:80;
 
     server_name {DOMAIN};
 
@@ -43,6 +44,7 @@ server {
 
     # SSL block (uncomment and replace paths when enabling HTTPS)
     # listen 443 ssl http2;
+    # listen [::]:443 ssl http2;
     #
     # ssl_certificate     {SSL_CERT_PATH};
     # ssl_certificate_key {SSL_KEY_PATH};
