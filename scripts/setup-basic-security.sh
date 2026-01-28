@@ -79,10 +79,11 @@ if ask_confirm "Do you want to setup UFW (Uncomplicated Firewall) now?" "Y"; the
 
     log_info "Configuring UFW..."
     ufw allow OpenSSH
+    ufw allow 'Nginx Full'
     ufw --force enable
     ufw status
 
-    log_success "UFW enabled with OpenSSH allowed."
+    log_success "UFW enabled with OpenSSH & Nginx allowed."
 else
     log_info "UFW setup skipped."
 fi
@@ -99,6 +100,62 @@ if ask_confirm "Do you want to install Fail2Ban (protect against brute-force att
     fi
 
     log_info "Fail2Ban installed and running."
+
+    # ────────────────────────────────────────────────
+    # Configure Fail2Ban with custom SSH port
+    # ────────────────────────────────────────────────
+    echo -e "${GREEN}Configuring Fail2Ban for custom SSH port...${NC}"
+
+    # Default SSH port from previous steps or fallback
+    DEFAULT_SSH_PORT=2204
+
+    # Prompt user for SSH port (interactive mode)
+    read -r -p "Enter custom SSH port (default $DEFAULT_SSH_PORT): " SSH_PORT
+    SSH_PORT=${SSH_PORT:-$DEFAULT_SSH_PORT}
+
+    # Validate port (basic check: number between 1024-65535)
+    if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || [ "$SSH_PORT" -lt 1024 ] || [ "$SSH_PORT" -gt 65535 ]; then
+        echo -e "${RED}Invalid port: $SSH_PORT. Using default $DEFAULT_SSH_PORT.${NC}"
+        SSH_PORT=$DEFAULT_SSH_PORT
+    fi
+
+    # Path to template and target
+    TEMPLATE_FILE="./config/fail2ban/jail.local"
+    TARGET_FILE="/etc/fail2ban/jail.local"
+
+    if [ ! -f "$TEMPLATE_FILE" ]; then
+        echo -e "${RED}Template file not found: $TEMPLATE_FILE${NC}"
+        echo -e "${YELLOW}Skipping Fail2Ban custom config.${NC}"
+    else
+        # Copy template to temp file for editing
+        cp "$TEMPLATE_FILE" /tmp/jail.local.tmp
+
+        # Replace port in [sshd] section
+        # Use sed to find line 'port = ...' under [sshd] and update
+        sed -i "/^\[sshd\]/,/^\[/ s/^port\s*=.*/port = $SSH_PORT/" /tmp/jail.local.tmp
+
+        # Also update any comment like '# port = ssh' if exists
+        sed -i "s/#\s*port\s*=.*/# port = $SSH_PORT # Updated by setup script/" /tmp/jail.local.tmp
+
+        # Copy to system location with proper permissions
+        cp /tmp/jail.local.tmp "$TARGET_FILE"
+        chown root:root "$TARGET_FILE"
+        chmod 644 "$TARGET_FILE"
+        rm -f /tmp/jail.local.tmp
+
+        echo -e "${GREEN}Fail2Ban jail.local updated with SSH port: $SSH_PORT${NC}"
+
+        # Restart Fail2Ban to apply changes
+        if systemctl is-active --quiet fail2ban; then
+            systemctl restart fail2ban
+            echo -e "${GREEN}Fail2Ban restarted successfully.${NC}"
+        else
+            echo -e "${YELLOW}Fail2Ban not active yet. Will apply on next start.${NC}"
+        fi
+    fi
+
+    echo ""
+
     systemctl status fail2ban --no-pager | head -n 5
     log_success "Fail2Ban setup completed."
 else

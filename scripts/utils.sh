@@ -73,12 +73,13 @@ ask_confirm() {
     local default="${2:-Y}"
     local response
 
-    printf "%s [Y/n] " "$prompt" >&2
     read -p "$prompt [Y/n] " -r response
 
-    response=${response:-$default}
+    response="${response:-$default}"
 
-    if [[ "$response" =~ ^[Yy]$ || "$response" =~ ^[Yy][Ee][Ss]$ || "$response" == "" && "$default" == "Y" ]]; then
+    if [[ -z "$response" && "$default" == "Y" ]] || \
+       [[ "$response" =~ ^[Yy]$ ]] || \
+       [[ "$response" =~ ^[Yy][Ee][Ss]$ ]]; then
         return 0  # true
     else
         return 1  # false
