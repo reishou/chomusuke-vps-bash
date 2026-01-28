@@ -165,20 +165,20 @@ if ask_confirm "Do you have existing SSL key/cert files?" "Y"; then
     read -r -p "Enter full absolute path to private key (e.g., /etc/ssl/cloudflare/chomusuke.site.key): " ssl_key_path
     read -r -p "Enter full absolute path to full certificate (e.g., /etc/ssl/cloudflare/chomusuke.site.crt): " ssl_cert_path
 
-    if [ ! -f "$ssl_key_path" ] || [ ! -r "$ssl_key_path" ] || [ ! -f "$ssl_cert_path" ] || [ ! -r "$ssl_cert_path" ]; then
-        log_info "SSL files not found or not readable by current user."
-        log_info "Key path: $ssl_key_path"
-        log_info "Cert path: $ssl_cert_path"
-        log_info "Try using full absolute path or check permissions (e.g., sudo chmod o+r <file>)."
-        ssl_key_path=""
-        ssl_cert_path=""
-    elif ! grep -q "BEGIN.*PRIVATE KEY" "$ssl_key_path" 2>/dev/null || ! grep -q "BEGIN CERTIFICATE" "$ssl_cert_path" 2>/dev/null; then
-        log_info "Files exist but do not appear to be valid PEM format."
-        ssl_key_path=""
-        ssl_cert_path=""
-    else
-        log_success "Using provided SSL files (readable by current user)."
-    fi
+#    if [ ! -f "$ssl_key_path" ] || [ ! -r "$ssl_key_path" ] || [ ! -f "$ssl_cert_path" ] || [ ! -r "$ssl_cert_path" ]; then
+#        log_info "SSL files not found or not readable by current user."
+#        log_info "Key path: $ssl_key_path"
+#        log_info "Cert path: $ssl_cert_path"
+#        log_info "Try using full absolute path or check permissions (e.g., sudo chmod o+r <file>)."
+#        ssl_key_path=""
+#        ssl_cert_path=""
+#    elif ! grep -q "BEGIN.*PRIVATE KEY" "$ssl_key_path" 2>/dev/null || ! grep -q "BEGIN CERTIFICATE" "$ssl_cert_path" 2>/dev/null; then
+#        log_info "Files exist but do not appear to be valid PEM format."
+#        ssl_key_path=""
+#        ssl_cert_path=""
+#    else
+#        log_success "Using provided SSL files (readable by current user)."
+#    fi
 fi
 
 if [ -z "$ssl_key_path" ] && [ -z "$ssl_cert_path" ]; then
