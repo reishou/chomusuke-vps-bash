@@ -202,7 +202,7 @@ fi
 # Step 8: Nginx config (needs sudo)
 # ────────────────────────────────────────────────
 TEMPLATE_PATH="$REPO_ROOT/config/nginx/astro.conf.example"
-NGINX_CONF="/etc/nginx/sites-available/$domain"
+NGINX_CONF="/etc/nginx/sites-available/$folder_name.conf"
 
 if [ ! -f "$TEMPLATE_PATH" ]; then
     log_error "Nginx template not found: $TEMPLATE_PATH"
@@ -218,11 +218,20 @@ sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$NGINX_CONF"
 
 # SSL manual (if provided)
 if [ -n "$ssl_key_path" ] && [ -n "$ssl_cert_path" ]; then
+    # Uncomment listen SSL lines
     sudo sed -i "s|# listen 443 ssl http2;|listen 443 ssl http2;|g" "$NGINX_CONF"
     sudo sed -i "s|# listen [::]:443 ssl http2;|listen [::]:443 ssl http2;|g" "$NGINX_CONF"
+
+    # Uncomment ssl_certificate lines (remove leading #)
+    sudo sed -i "s|# ssl_certificate     {SSL_CERT_PATH};|ssl_certificate     $ssl_cert_path;|g" "$NGINX_CONF"
+    sudo sed -i "s|# ssl_certificate_key {SSL_KEY_PATH};|ssl_certificate_key $ssl_key_path;|g" "$NGINX_CONF"
+
+    # Uncomment redirect HTTP to HTTPS
+    sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$NGINX_CONF"
+
+    # Replace placeholders (in case they are still there)
     sudo sed -i "s|{SSL_CERT_PATH}|$ssl_cert_path|g" "$NGINX_CONF"
     sudo sed -i "s|{SSL_KEY_PATH}|$ssl_key_path|g" "$NGINX_CONF"
-    sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$NGINX_CONF"
 fi
 
 sudo ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
