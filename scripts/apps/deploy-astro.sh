@@ -199,7 +199,7 @@ fi
 # ────────────────────────────────────────────────
 # Step 8: Nginx config (needs sudo)
 # ────────────────────────────────────────────────
-TEMPLATE_PATH="./config/astro.conf.example"
+TEMPLATE_PATH="./config/nginx/astro.conf.example"
 NGINX_CONF="/etc/nginx/sites-available/$domain"
 
 [ ! -f "$TEMPLATE_PATH" ] && log_error "Template not found."
