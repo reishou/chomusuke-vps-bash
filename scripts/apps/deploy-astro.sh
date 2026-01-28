@@ -79,7 +79,7 @@ fi
 log_info "Cloning repository..."
 git clone "$git_url" "$HOME/$folder_name"
 
-cd "$folder_name" || log_error "Cannot cd into folder."
+cd "$HOME/$folder_name" || log_error "Cannot cd into folder."
 
 # ────────────────────────────────────────────────
 # Step 4: Build (normal user)
