@@ -15,6 +15,8 @@ else
     exit 1
 fi
 
+REPO_ROOT="$(pwd)"
+
 echo -e "${GREEN}=== Astro Auto Deploy Script ===${NC}"
 echo "This script runs as your current user for git/npm, and uses sudo only when needed."
 echo "Do NOT run with sudo unless prompted."
@@ -199,12 +201,16 @@ fi
 # ────────────────────────────────────────────────
 # Step 8: Nginx config (needs sudo)
 # ────────────────────────────────────────────────
-TEMPLATE_PATH="./config/nginx/astro.conf.example"
+TEMPLATE_PATH="$REPO_ROOT/config/nginx/astro.conf.example"
 NGINX_CONF="/etc/nginx/sites-available/$domain"
 
-log_info "Current directory: $(pwd)"
-log_info "Template path: $TEMPLATE_PATH"
-ls -l "$TEMPLATE_PATH" || log_error "Template file missing or inaccessible"
+if [ ! -f "$TEMPLATE_PATH" ]; then
+    log_error "Nginx template not found: $TEMPLATE_PATH"
+    log_info "Make sure the script is started from the repo root directory."
+    exit 1
+fi
+
+log_info "Creating Nginx config for $domain..."
 sudo cp "$TEMPLATE_PATH" "$NGINX_CONF"
 sudo sed -i "s|{DOMAIN}|$domain|g" "$NGINX_CONF"
 sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$NGINX_CONF"
