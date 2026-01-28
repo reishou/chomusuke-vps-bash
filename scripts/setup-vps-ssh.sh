@@ -17,6 +17,40 @@ else
     exit 1
 fi
 
+# ────────────────────────────────────────────────
+# Function to generate new key
+# ────────────────────────────────────────────────
+generate_new_key() {
+    # Create .ssh directory if not exists
+    mkdir -p "$SSH_DIR"
+    chmod 700 "$SSH_DIR"
+
+    # Ask if user wants a passphrase
+    if ask_confirm "Do you want to set a passphrase for the key? (recommended for extra security)" "N"; then
+        read -r -s -p "Enter passphrase: " passphrase
+        echo ""
+        read -r -s -p "Confirm passphrase: " passphrase_confirm
+        echo ""
+
+        if [ "$passphrase" != "$passphrase_confirm" ]; then
+            log_error "Passphrases do not match. Aborted."
+        fi
+
+        ssh-keygen -t ed25519 -C "$(whoami)@$(hostname) - $(date +%Y-%m-%d)" \
+            -f "$PRIVATE_KEY" -N "$passphrase" || log_error "SSH key generation failed."
+    else
+        ssh-keygen -t ed25519 -C "$(whoami)@$(hostname) - $(date +%Y-%m-%d)" \
+            -f "$PRIVATE_KEY" -N "" || log_error "SSH key generation failed."
+    fi
+
+    chmod 600 "$PRIVATE_KEY"
+    chmod 644 "$PUBLIC_KEY"
+
+    log_success "New SSH key pair generated:"
+    log_info "Private key: $PRIVATE_KEY"
+    log_info "Public key:  $PUBLIC_KEY"
+}
+
 echo -e "${GREEN}=== VPS SSH Key Setup Script ===${NC}"
 echo "This script generates an SSH key pair (ed25519) for your VPS user"
 echo "and displays the public key so you can add it to GitHub."
@@ -31,7 +65,7 @@ SSH_DIR="$HOME/.ssh"
 # Step 1: Ask for custom key name
 # ────────────────────────────────────────────────
 default_key_name="id_ed25519"
-read -p "Enter SSH key name (filename without extension, default: $default_key_name): " key_name
+read -r -p "Enter SSH key name (filename without extension, default: $default_key_name): " key_name
 key_name=${key_name:-$default_key_name}
 
 # Basic validation: no spaces, no special chars that break filenames
@@ -65,40 +99,6 @@ else
         exit 0
     fi
 fi
-
-# ────────────────────────────────────────────────
-# Function to generate new key
-# ────────────────────────────────────────────────
-generate_new_key() {
-    # Create .ssh directory if not exists
-    mkdir -p "$SSH_DIR"
-    chmod 700 "$SSH_DIR"
-
-    # Ask if user wants a passphrase
-    if ask_confirm "Do you want to set a passphrase for the key? (recommended for extra security)" "N"; then
-        read -s -p "Enter passphrase: " passphrase
-        echo ""
-        read -s -p "Confirm passphrase: " passphrase_confirm
-        echo ""
-
-        if [ "$passphrase" != "$passphrase_confirm" ]; then
-            log_error "Passphrases do not match. Aborted."
-        fi
-
-        ssh-keygen -t ed25519 -C "$(whoami)@$(hostname) - $(date +%Y-%m-%d)" \
-            -f "$PRIVATE_KEY" -N "$passphrase" || log_error "SSH key generation failed."
-    else
-        ssh-keygen -t ed25519 -C "$(whoami)@$(hostname) - $(date +%Y-%m-%d)" \
-            -f "$PRIVATE_KEY" -N "" || log_error "SSH key generation failed."
-    fi
-
-    chmod 600 "$PRIVATE_KEY"
-    chmod 644 "$PUBLIC_KEY"
-
-    log_success "New SSH key pair generated:"
-    log_info "Private key: $PRIVATE_KEY"
-    log_info "Public key:  $PUBLIC_KEY"
-}
 
 # ────────────────────────────────────────────────
 # Step 3: Display public key for copy
