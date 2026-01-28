@@ -39,6 +39,48 @@ else
 fi
 
 # ────────────────────────────────────────────────
+# Step 1.5: Check and install pnpm + rsync (if missing)
+# ────────────────────────────────────────────────
+log_info "Checking required tools: pnpm and rsync..."
+
+# Check rsync
+if ! command -v rsync >/dev/null 2>&1; then
+    log_info "rsync is not installed."
+    if ask_confirm "Do you want to install rsync now? (requires sudo)" "Y"; then
+        sudo apt update -y
+        sudo apt install -y rsync
+        log_success "rsync installed."
+    else
+        log_error "rsync is required for syncing build output to /var/www. Script aborted."
+    fi
+else
+    log_success "rsync is already installed."
+fi
+
+# Check pnpm
+if ! command -v pnpm >/dev/null 2>&1; then
+    log_info "pnpm is not installed."
+    if ask_confirm "Do you want to install pnpm now? (global install via corepack)" "Y"; then
+        # Use corepack (recommended way since Node.js 16.9+)
+        if ! command -v corepack >/dev/null 2>&1; then
+            log_info "corepack not found. Enabling it..."
+            sudo corepack enable || log_error "Failed to enable corepack. Try manual install."
+        fi
+
+        # Enable and install latest pnpm
+        corepack prepare pnpm@latest --activate
+        log_success "pnpm installed and activated via corepack."
+    else
+        log_error "pnpm is required for Astro dependency management. Script aborted."
+        exit 1
+    fi
+else
+    log_success "pnpm is already installed (version: $(pnpm --version))."
+fi
+
+echo ""  # empty line for readability
+
+# ────────────────────────────────────────────────
 # Step 2: Git repository URL (runs as normal user)
 # ────────────────────────────────────────────────
 read -r -p "Enter the Git repository URL (e.g., https://github.com/user/my-astro-site.git or git@github.com:user/repo.git): " git_url
