@@ -94,7 +94,7 @@ npm run build || log_error "npm run build failed."
 # ────────────────────────────────────────────────
 read -r -p "Enter the domain for this site (e.g., example.com): " domain
 if [ -z "$domain" ] || ! [[ "$domain" =~ \.[a-z]{2,}$ ]]; then
-    log_error "Invalid domain (must have a valid TLD like .com, .vn)."
+    log_error "Invalid domain (must have a valid TLD like .com, .net)."
 fi
 
 # ────────────────────────────────────────────────
@@ -178,6 +178,7 @@ cp "$TEMPLATE_PATH" "$NGINX_CONF"
 # Replace placeholders
 sed -i "s|{DOMAIN}|$domain|g" "$NGINX_CONF"
 sed -i "s|{ROOT_PATH}|$root_path|g" "$NGINX_CONF"
+sed -i "s|{FOLDER_NAME}|$folder_name|g" "$NGINX_CONF"
 
 # If manual SSL provided, uncomment and fill SSL lines
 if [ -n "$ssl_key_path" ] && [ -n "$ssl_cert_path" ]; then

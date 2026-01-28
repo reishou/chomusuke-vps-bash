@@ -7,6 +7,10 @@ server {
 
     server_name {DOMAIN};
 
+    # Dynamic log files based on folder_name
+    access_log /var/log/nginx/{FOLDER_NAME}.access.log;
+    error_log  /var/log/nginx/{FOLDER_NAME}.error.log;
+
     root {ROOT_PATH};  # e.g. /var/www/my-astro-site/dist
 
     index index.html index.htm;
