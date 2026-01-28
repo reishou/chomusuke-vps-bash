@@ -42,15 +42,28 @@ fi
 # ────────────────────────────────────────────────
 # Step 2: Git repository URL
 # ────────────────────────────────────────────────
-read -r -p "Enter the Git repository URL (e.g., https://github.com/user/my-astro-site.git): " git_url
+# ────────────────────────────────────────────────
+# Step 2: Git repository URL
+# ────────────────────────────────────────────────
+read -r -p "Enter the Git repository URL (e.g., https://github.com/user/my-astro-site.git or git@github.com:user/repo.git): " git_url
+
+# Trim any leading/trailing whitespace
+git_url=$(echo "$git_url" | xargs)
+
 [ -z "$git_url" ] && log_error "Git URL cannot be empty."
 
-# Basic Git URL validation (support HTTPS, git://, and SSH git@github.com:user/repo.git)
-# Support HTTPS, git protocol, and SSH (git@github.com:user/repo.git)
-if ! [[ "$git_url" =~ ^((git|ssh|http(s)?)|(git@[\w.]+))(:(\\/\\/)?)([\w.@:\\/-~]+)(\.git)?(\\/)?$ ]]; then
-    log_error "Invalid Git URL. Must start with https://, git:// or git@ (e.g., git@github.com:user/repo.git)."
-    exit 1
+# Dry-run check: Verify repo is accessible without cloning
+log_info "Verifying repository accessibility (this checks URL and permissions)..."
+if ! git ls-remote --exit-code --heads "$git_url" >/dev/null 2>&1; then
+    log_error "Cannot access repository. Possible causes:
+  - Repo is private → ensure SSH key is added to GitHub/GitLab (run setup-vps-ssh.sh if needed)
+  - Typo in URL
+  - HTTPS private repo needs Personal Access Token (PAT) in URL
+  - Network/firewall issue
+  - Git not installed or outdated"
 fi
+
+log_success "Repository is accessible. Proceeding with clone..."
 
 # Extract default folder name from repo URL
 default_folder=$(basename "$git_url" .git)
