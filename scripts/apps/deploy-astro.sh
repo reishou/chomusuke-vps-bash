@@ -85,10 +85,10 @@ cd "$HOME/$folder_name" || log_error "Cannot cd into folder."
 # Step 4: Build (normal user)
 # ────────────────────────────────────────────────
 log_info "Installing dependencies..."
-npm install --production || log_error "npm install failed."
+pnpm install --production || log_error "pnpm install failed."
 
 log_info "Building Astro site..."
-npm run build || log_error "Build failed."
+pnpm run build || log_error "Build failed."
 
 # ────────────────────────────────────────────────
 # Step 5: Domain (normal user)
