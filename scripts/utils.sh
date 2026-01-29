@@ -241,9 +241,13 @@ apply_nginx_config() {
         log_error "Nginx template not found: $template_path"
     fi
 
+    log_info "Creating Nginx config for $domain..."
     sudo cp "$template_path" "$nginx_conf"
+    log_info 'sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"'
     sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"
+    log_info 'sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"'
     sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"
+    log_info 'sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"'
     sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"
 
     # SSL manual (if provided)
