@@ -180,6 +180,7 @@ setup_web_root() {
 
     read -r -p "Enter Nginx root path (default: $default_root): " root_path
     root_path=${root_path:-$default_root}
+    log_info "Using root path: $root_path"
 
     if [ ! -d "$root_path" ]; then
         log_error "Root path does not exist: $root_path"

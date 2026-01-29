@@ -106,6 +106,7 @@ log_success "Repository accessible."
 default_folder=$(basename "$git_url" .git)
 read -r -p "Enter folder name to clone into (default: $default_folder): " folder_name
 folder_name=${folder_name:-$default_folder}
+var_www_path="/var/www/$folder_name"
 
 if [[ "$folder_name" =~ [/\\*] ]] || [ -z "$folder_name" ]; then
     log_error "Invalid folder name."
@@ -152,7 +153,7 @@ setup_ssl
 # ────────────────────────────────────────────────
 # Step 7: Apply Nginx config
 # ────────────────────────────────────────────────
-apply_nginx_config "$REPO_ROOT/config/nginx/astro.conf.example" "$domain" "$root_path" "$folder_name"
+apply_nginx_config "$REPO_ROOT/config/nginx/astro.conf.example" "$domain" "$root_path" "$folder_name" "$var_www_path"
 
 # ────────────────────────────────────────────────
 # Final summary
