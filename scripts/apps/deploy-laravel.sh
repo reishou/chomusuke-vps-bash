@@ -250,13 +250,9 @@ else
 fi
 
 # ────────────────────────────────────────────────
-# Step 7: Cache commands
+# Step 7: Cache commands - MOVED to AFTER rsync (new position)
 # ────────────────────────────────────────────────
-log_info "Caching configuration, routes, and views..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-log_success "Caching completed."
+# This step is now executed after rsync to ensure correct paths in cache
 
 # ────────────────────────────────────────────────
 # Step 8: Configure php-fpm pool (requires sudo)
@@ -296,6 +292,27 @@ sudo chmod -R 775 "$var_www_path/storage" "$var_www_path/bootstrap/cache"
 log_success "Laravel storage permissions fixed."
 
 # ────────────────────────────────────────────────
+# Step 10.5: Cache commands - NOW AFTER rsync
+# ────────────────────────────────────────────────
+log_info "Clearing and re-caching Laravel config/routes/views (after rsync)..."
+
+cd "$var_www_path" || log_error "Cannot cd into production path $var_www_path"
+
+# Clear first
+sudo -u www-data php artisan config:clear
+sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan route:clear
+sudo -u www-data php artisan view:clear
+sudo -u www-data php artisan event:clear
+
+# Re-cache
+sudo -u www-data php artisan config:cache
+sudo -u www-data php artisan route:cache
+sudo -u www-data php artisan view:cache
+
+log_success "Laravel cache cleared and re-cached with new paths."
+
+# ────────────────────────────────────────────────
 # Step 11: SSL handling
 # ────────────────────────────────────────────────
 setup_ssl  # Reuse from utils.sh
@@ -303,7 +320,6 @@ setup_ssl  # Reuse from utils.sh
 # ────────────────────────────────────────────────
 # Step 12: Generate Nginx config from template
 # ────────────────────────────────────────────────
-# Ở Step 12
 apply_nginx_config "$REPO_ROOT/config/nginx/laravel.conf.example" "$domain" "$root_path" "$folder_name" "$var_www_path"
 
 # ────────────────────────────────────────────────
