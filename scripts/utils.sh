@@ -160,3 +160,107 @@ check_file_exists() {
         exit 1
     fi
 }
+
+# Ask for domain with validation
+ask_domain() {
+    local domain
+    read -r -p "Enter the domain for this site (e.g., example.com): " domain
+    if [ -z "$domain" ] || ! [[ "$domain" =~ \.[a-z]{2,}$ ]]; then
+        log_error "Invalid domain (must have a valid TLD like .com, .vn)."
+    fi
+    echo "$domain"
+}
+
+# Setup web root: ask root path, rsync to /var/www, chown www-data
+# Params: $1 = current project path, $2 = folder_name, $2 = default_root
+setup_web_root() {
+    local project_path="$1"
+    local folder_name="$2"
+    local default_root="$3"
+
+    read -r -p "Enter Nginx root path (default: $default_root): " root_path
+    root_path=${root_path:-$default_root}
+
+    if [ ! -d "$root_path" ]; then
+        log_error "Root path does not exist: $root_path"
+    fi
+
+    local var_www_path="/var/www/$folder_name"
+    sudo mkdir -p "$var_www_path"
+    sudo rsync -a --delete "${project_path}/" "$var_www_path/"
+    sudo chown -R www-data:www-data "$var_www_path"
+    log_success "Synced app to $var_www_path"
+
+    echo "$var_www_path/public"  # return the actual root path for Nginx
+}
+
+# SSL handling: manual files first, then Certbot
+# Returns: ssl_key_path and ssl_cert_path (set as global or echo)
+setup_ssl() {
+    local ssl_key_path=""
+    local ssl_cert_path=""
+
+    if ask_confirm "Do you have existing SSL key/cert files?" "Y"; then
+        read -r -p "Enter full absolute path to private key (e.g., /etc/ssl/cloudflare/chomusuke.site.key): " ssl_key_path
+        read -r -p "Enter full absolute path to full certificate (e.g., /etc/ssl/cloudflare/chomusuke.site.crt): " ssl_cert_path
+    fi
+
+    if [ -z "$ssl_key_path" ] && [ -z "$ssl_cert_path" ]; then
+        if ask_confirm "Use Certbot for free SSL?" "Y"; then
+            if ! command -v certbot >/dev/null 2>&1; then
+                log_info "Installing Certbot (requires sudo)..."
+                sudo apt update -y
+                sudo apt install -y certbot python3-certbot-nginx
+            fi
+            sudo certbot --nginx -d "$domain" --non-interactive --agree-tos --email "admin@$domain" || {
+                log_info "Certbot failed. Skipping SSL."
+            }
+        else
+            log_info "Skipping SSL. Site will be HTTP only."
+        fi
+    fi
+
+    # Return values (using global variables or echo if preferred)
+    export SSL_KEY_PATH="$ssl_key_path"
+    export SSL_CERT_PATH="$ssl_cert_path"
+}
+
+# Apply Nginx config from template
+# Params: $1 = template_path, $2 = domain, $3 = root_path, $4 = folder_name
+# utils.sh
+apply_nginx_config() {
+    local template_path="$1"
+    local domain="$2"
+    local root_path="$3"
+    local folder_name="$4"
+    local var_www_path="$5"
+
+    local nginx_conf="/etc/nginx/sites-available/$folder_name"
+
+    if [ ! -f "$template_path" ]; then
+        log_error "Nginx template not found: $template_path"
+    fi
+
+    sudo cp "$template_path" "$nginx_conf"
+    sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"
+    sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"
+    sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"
+
+    # Nếu có SSL
+    if [ -n "${SSL_KEY_PATH:-}" ] && [ -n "${SSL_CERT_PATH:-}" ]; then
+        sudo sed -i "s|# listen 443 ssl;|listen 443 ssl;|g" "$nginx_conf"
+        sudo sed -i "s|# listen [::]:443 ssl;|listen [::]:443 ssl;|g" "$nginx_conf"
+        sudo sed -i "s|# ssl_certificate     {SSL_CERT_PATH};|ssl_certificate     ${SSL_CERT_PATH};|g" "$nginx_conf"
+        sudo sed -i "s|# ssl_certificate_key {SSL_KEY_PATH};|ssl_certificate_key ${SSL_KEY_PATH};|g" "$nginx_conf"
+        sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"
+    fi
+
+    sudo ln -sf "$nginx_conf" /etc/nginx/sites-enabled/
+
+    if sudo nginx -t; then
+        sudo systemctl reload nginx
+        log_success "Nginx config applied successfully."
+    else
+        log_error "Nginx configuration test failed. Check $nginx_conf"
+    fi
+}
