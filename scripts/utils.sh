@@ -251,11 +251,20 @@ apply_nginx_config() {
 
     # SSL manual (if provided)
     if [ -n "$SSL_KEY_PATH" ] && [ -n "$SSL_CERT_PATH" ]; then
+        # Uncomment listen SSL lines
         sudo sed -i "s|# listen 443 ssl http2;|listen 443 ssl http2;|g" "$nginx_conf"
         sudo sed -i "s|# listen [::]:443 ssl http2;|listen [::]:443 ssl http2;|g" "$nginx_conf"
-        sudo sed -i "s|{SSL_CERT_PATH}|$|g" "$nginx_conf"
-        sudo sed -i "s|{SSL_KEY_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"
+
+        # Uncomment ssl_certificate lines (remove leading #)
+        sudo sed -i "s|# ssl_certificate     {SSL_CERT_PATH};|ssl_certificate     $SSL_CERT_PATH;|g" "$nginx_conf"
+        sudo sed -i "s|# ssl_certificate_key {SSL_KEY_PATH};|ssl_certificate_key $SSL_KEY_PATH;|g" "$nginx_conf"
+
+        # Uncomment redirect HTTP to HTTPS
         sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"
+
+        # Replace placeholders (in case they are still there)
+        sudo sed -i "s|{SSL_CERT_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"
+        sudo sed -i "s|{SSL_KEY_PATH}|$SSL_KEY_PATH|g" "$nginx_conf"
     fi
 
     sudo ln -sf "$nginx_conf" /etc/nginx/sites-enabled/
