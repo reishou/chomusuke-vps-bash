@@ -246,12 +246,12 @@ apply_nginx_config() {
     sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"
     sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"
 
-    # Nếu có SSL
-    if [ -n "${SSL_KEY_PATH:-}" ] && [ -n "${SSL_CERT_PATH:-}" ]; then
-        sudo sed -i "s|# listen 443 ssl;|listen 443 ssl;|g" "$nginx_conf"
-        sudo sed -i "s|# listen [::]:443 ssl;|listen [::]:443 ssl;|g" "$nginx_conf"
-        sudo sed -i "s|# ssl_certificate     {SSL_CERT_PATH};|ssl_certificate     ${SSL_CERT_PATH};|g" "$nginx_conf"
-        sudo sed -i "s|# ssl_certificate_key {SSL_KEY_PATH};|ssl_certificate_key ${SSL_KEY_PATH};|g" "$nginx_conf"
+    # SSL manual (if provided)
+    if [ -n "$SSL_KEY_PATH" ] && [ -n "$SSL_CERT_PATH" ]; then
+        sudo sed -i "s|# listen 443 ssl http2;|listen 443 ssl http2;|g" "$nginx_conf"
+        sudo sed -i "s|# listen [::]:443 ssl http2;|listen [::]:443 ssl http2;|g" "$nginx_conf"
+        sudo sed -i "s|{SSL_CERT_PATH}|$|g" "$nginx_conf"
+        sudo sed -i "s|{SSL_KEY_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"
         sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"
     fi
 
