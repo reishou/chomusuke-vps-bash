@@ -234,6 +234,22 @@ else
 fi
 
 # ────────────────────────────────────────────────
+# Step 6.5: Run migrations (new step)
+# ────────────────────────────────────────────────
+log_info "Running Laravel migrations..."
+
+php artisan migrate --force || log_error "Migrations failed."
+log_success "Migrations completed (auto-run since DB was created)."
+
+# Optional: Seed database if needed
+if ask_confirm "Do you want to run database seeds?" "N"; then
+    php artisan db:seed || log_error "Seeding failed."
+    log_success "Database seeded."
+else
+    log_info "Skipping database seeding."
+fi
+
+# ────────────────────────────────────────────────
 # Step 7: Cache commands
 # ────────────────────────────────────────────────
 log_info "Caching configuration, routes, and views..."
