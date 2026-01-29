@@ -149,10 +149,9 @@ if [ -d "$folder_name" ]; then
 fi
 
 log_info "Cloning repository..."
-git clone "$git_url" "$folder_name"
+git clone "$git_url" "$HOME/$folder_name"
 
-# Change to project directory for build
-cd "$folder_name" || log_error "Cannot cd into folder."
+cd "$HOME/$folder_name" || log_error "Cannot cd into folder."
 
 # ────────────────────────────────────────────────
 # Step 5: Composer install & Laravel setup
