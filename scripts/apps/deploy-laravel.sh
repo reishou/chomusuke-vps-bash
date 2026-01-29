@@ -243,7 +243,7 @@ log_success "Migrations completed (auto-run since DB was created)."
 
 # Optional: Seed database if needed
 if ask_confirm "Do you want to run database seeds?" "N"; then
-    php artisan db:seed || log_error "Seeding failed."
+    php artisan db:seed || (log_error "Seeding failed." && exit 1)
     log_success "Database seeded."
 else
     log_info "Skipping database seeding."
@@ -287,6 +287,14 @@ domain=$(ask_domain)  # Reuse from utils.sh
 # Step 10: Root path & rsync to /var/www
 # ────────────────────────────────────────────────
 root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)/public")  # Reuse from utils.sh
+
+# Fix storage permissions for Laravel (required for logs, cache, sessions...)
+log_info "Fixing Laravel storage and cache permissions..."
+sudo mkdir -p "$var_www_path/storage/logs" "$var_www_path/bootstrap/cache"
+sudo chown -R www-data:www-data "$var_www_path/storage" "$var_www_path/bootstrap/cache"
+sudo chmod -R 775 "$var_www_path/storage" "$var_www_path/bootstrap/cache"
+log_success "Laravel storage permissions fixed."
+
 # ────────────────────────────────────────────────
 # Step 11: SSL handling
 # ────────────────────────────────────────────────
