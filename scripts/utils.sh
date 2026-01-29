@@ -167,6 +167,7 @@ ask_domain() {
     read -r -p "Enter the domain for this site (e.g., example.com): " domain
     if [ -z "$domain" ] || ! [[ "$domain" =~ \.[a-z]{2,}$ ]]; then
         log_error "Invalid domain (must have a valid TLD like .com, .vn)."
+        exit 1
     fi
     echo "$domain"
 }
@@ -180,17 +181,17 @@ setup_web_root() {
 
     read -r -p "Enter Nginx root path (default: $default_root): " root_path
     root_path=${root_path:-$default_root}
-    log_info "Using root path: $root_path"
 
     if [ ! -d "$root_path" ]; then
         log_error "Root path does not exist: $root_path"
+        exit 1
     fi
 
     local var_www_path="/var/www/$folder_name"
     sudo mkdir -p "$var_www_path"
     sudo rsync -a --delete "${project_path}/" "$var_www_path/"
     sudo chown -R www-data:www-data "$var_www_path"
-    log_success "Synced app to $var_www_path"
+    log_success "Synced app to $var_www_path" >&2
 
     echo "$var_www_path/public"  # return the actual root path for Nginx
 }
@@ -244,26 +245,16 @@ apply_nginx_config() {
 
     log_info "Creating Nginx config for $domain..."
     sudo cp "$template_path" "$nginx_conf"
-    log_info 'sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"'
     sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"
-    log_info 'sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"'
-    log_info $root_path
-    log_info $nginx_conf
     sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"
-    log_info 'sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"'
     sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"
 
     # SSL manual (if provided)
     if [ -n "$SSL_KEY_PATH" ] && [ -n "$SSL_CERT_PATH" ]; then
-        log_info 'sudo sed -i "s|# listen 443 ssl http2;|listen 443 ssl http2;|g" "$nginx_conf"'
         sudo sed -i "s|# listen 443 ssl http2;|listen 443 ssl http2;|g" "$nginx_conf"
-        log_info 'sudo sed -i "s|# listen [::]:443 ssl http2;|listen [::]:443 ssl http2;|g" "$nginx_conf"'
         sudo sed -i "s|# listen [::]:443 ssl http2;|listen [::]:443 ssl http2;|g" "$nginx_conf"
-        log_info 'sudo sed -i "s|{SSL_CERT_PATH}|$|g" "$nginx_conf"'
         sudo sed -i "s|{SSL_CERT_PATH}|$|g" "$nginx_conf"
-        log_info 'sudo sed -i "s|{SSL_KEY_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"'
         sudo sed -i "s|{SSL_KEY_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"
-        log_info 'sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"'
         sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"
     fi
 

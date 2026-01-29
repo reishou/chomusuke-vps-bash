@@ -271,7 +271,6 @@ domain=$(ask_domain)  # Reuse from utils.sh
 # Step 10: Root path & rsync to /var/www
 # ────────────────────────────────────────────────
 root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)/public")  # Reuse from utils.sh
-log_info "Nginx root set to: $root_path"
 # ────────────────────────────────────────────────
 # Step 11: SSL handling
 # ────────────────────────────────────────────────
