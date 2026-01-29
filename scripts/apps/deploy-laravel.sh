@@ -164,6 +164,21 @@ if [ ! -f ".env" ]; then
 fi
 
 # ────────────────────────────────────────────────
+# Step 5.5: Install frontend dependencies and build assets with Vite (new)
+# ────────────────────────────────────────────────
+log_info "Installing frontend dependencies with pnpm (for Vite)..."
+pnpm install || log_error "pnpm install failed."
+
+log_info "Building frontend assets with Vite..."
+pnpm run build || log_error "pnpm run build failed."
+
+# Verify build output (public/build/manifest.json should exist)
+if [ ! -f "public/build/manifest.json" ]; then
+    log_error "Vite build output not found (public/build/manifest.json missing). Build may have failed."
+fi
+log_success "Vite assets built successfully."
+
+# ────────────────────────────────────────────────
 # Step 6: Configure .env
 # ────────────────────────────────────────────────
 log_info "Configuring .env file..."
