@@ -246,6 +246,8 @@ apply_nginx_config() {
     log_info 'sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"'
     sudo sed -i "s|{DOMAIN}|$domain|g" "$nginx_conf"
     log_info 'sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"'
+    log_info $root_path
+    log_info $nginx_conf
     sudo sed -i "s|{ROOT_PATH}|$root_path|g" "$nginx_conf"
     log_info 'sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"'
     sudo sed -i "s|{FOLDER_NAME}|$folder_name|g" "$nginx_conf"
