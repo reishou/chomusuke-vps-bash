@@ -237,7 +237,7 @@ apply_nginx_config() {
     local folder_name="$4"
     local var_www_path="$5"
 
-    local nginx_conf="/etc/nginx/sites-available/$folder_name"
+    local nginx_conf="/etc/nginx/sites-available/$folder_name.conf"
 
     if [ ! -f "$template_path" ]; then
         log_error "Nginx template not found: $template_path"
@@ -258,9 +258,6 @@ apply_nginx_config() {
         # Uncomment ssl_certificate lines (remove leading #)
         sudo sed -i "s|# ssl_certificate     {SSL_CERT_PATH};|ssl_certificate     $SSL_CERT_PATH;|g" "$nginx_conf"
         sudo sed -i "s|# ssl_certificate_key {SSL_KEY_PATH};|ssl_certificate_key $SSL_KEY_PATH;|g" "$nginx_conf"
-
-        # Uncomment redirect HTTP to HTTPS
-        sudo sed -i "s|# return 301 https://\$host\$request_uri;|return 301 https://\$host\$request_uri;|g" "$nginx_conf"
 
         # Replace placeholders (in case they are still there)
         sudo sed -i "s|{SSL_CERT_PATH}|$SSL_CERT_PATH|g" "$nginx_conf"
