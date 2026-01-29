@@ -33,7 +33,7 @@ echo ""
 # Step 1: Check and install prerequisites
 # ────────────────────────────────────────────────
 required_tools=("nginx" "pnpm" "php" "composer" "psql" "rsync")
-php_extensions=("bcmath" "mbstring" "pgsql" "curl" "gd" "intl" "xml" "zip")
+php_extensions=("bcmath" "mbstring" "pgsql" "curl" "gd" "intl" "xml" "zip" "redis")
 
 for tool in "${required_tools[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
