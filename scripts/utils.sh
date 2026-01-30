@@ -273,3 +273,123 @@ apply_nginx_config() {
         log_error "Nginx configuration test failed. Check $nginx_conf"
     fi
 }
+
+# Check and install required tools if missing
+# Params: $1 = array of tools (space-separated string)
+# Example: check_prerequisites "nginx pm2 node pnpm psql"
+check_prerequisites() {
+    local tools=("$1")
+
+    log_info "Checking required tools: ${tools[*]}..."
+
+    for tool in "${tools[@]}"; do
+        if ! command -v "$tool" >/dev/null 2>&1; then
+            log_info "$tool is not installed."
+            if ask_confirm "Do you want to install $tool now? (requires sudo)" "Y"; then
+                sudo apt update -y
+                case "$tool" in
+                    nginx) sudo apt install -y nginx ;;
+                    pm2) sudo npm install -g pm2 ;;
+                    node) sudo apt install -y nodejs npm ;;
+                    pnpm)
+                        if ! command -v corepack >/dev/null 2>&1; then
+                            sudo corepack enable
+                        fi
+                        corepack prepare pnpm@latest --activate ;;
+                    psql) sudo apt install -y postgresql ;;
+                    rsync) sudo apt install -y rsync ;;
+                    *) log_error "No installation rule for $tool." ;;
+                esac
+                log_success "$tool installed."
+            else
+                log_error "$tool is required. Script aborted."
+            fi
+        else
+            log_success "$tool is already installed."
+        fi
+    done
+}
+
+# Optional: Create PostgreSQL database and user
+# Returns: nothing, but sets global vars db_name, db_user, db_password if created
+# Usage: create_postgres_db
+create_postgres_db() {
+    local db_created=false
+
+    if ask_confirm "Do you want to create a PostgreSQL database and user?" "N"; then
+        read -r -p "Enter DB name (default: next): " db_name
+        db_name=${db_name:-next}
+
+        read -r -p "Enter DB username (default: next_user): " db_user
+        db_user=${db_user:-next_user}
+
+        read -r -s -p "Enter DB password (default: Abcd@1234): " db_password
+        db_password=${db_password:-Abcd@1234}
+        echo ""
+
+        sudo -u postgres psql -c "CREATE DATABASE $db_name;" || log_info "DB $db_name already exists or error."
+        sudo -u postgres psql -c "CREATE USER $db_user WITH PASSWORD '$db_password';" || log_info "User $db_user already exists or error."
+        sudo -u postgres psql -c "ALTER DATABASE $db_name OWNER TO $db_user;"
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $db_name TO $db_user;"
+        log_success "PostgreSQL DB '$db_name' and user '$db_user' created (if not existing)."
+        db_created=true
+    else
+        log_info "Skipping DB creation (assume manual setup)."
+    fi
+
+    # Export vars nếu cần dùng ở script chính
+    export DB_NAME="$db_name"
+    export DB_USER="$db_user"
+    export DB_PASSWORD="$db_password"
+    export DB_CREATED="$db_created"
+}
+
+# Clone Git repository with validation and folder handling
+# Returns: folder_name (echo) and sets PROJECT_PATH global
+# Usage: clone_repository
+clone_repository() {
+    local git_url
+    local folder_name
+    local default_folder
+
+    read -r -p "Enter the Git repository URL: " git_url
+    git_url=$(echo "$git_url" | xargs)
+    [ -z "$git_url" ] && log_error "Git URL cannot be empty."
+
+    log_info "Verifying repository accessibility..."
+    if ! git ls-remote --exit-code --heads "$git_url" >/dev/null 2>&1; then
+        log_error "Cannot access repository. Possible causes:
+  - Private repo → ensure SSH key is added to GitHub (run setup-vps-ssh.sh)
+  - Typo in URL
+  - HTTPS private repo needs token
+  - Network issue"
+    fi
+    log_success "Repository accessible."
+
+    default_folder=$(basename "$git_url" .git)
+    read -r -p "Enter folder name to clone into (default: $default_folder): " folder_name
+    folder_name=${folder_name:-$default_folder}
+
+    if [[ "$folder_name" =~ [/\\*] ]] || [ -z "$folder_name" ]; then
+        log_error "Invalid folder name (cannot contain /, \\, *)."
+    fi
+
+    if [ -d "$folder_name" ]; then
+        log_info "Folder $folder_name already exists."
+        if ask_confirm "Do you want to delete and re-clone?" "N"; then
+            rm -rf "$folder_name"
+        else
+            log_error "Aborted because folder already exists."
+        fi
+    fi
+
+    log_info "Cloning repository..."
+    git clone "$git_url" "$HOME/$folder_name" || log_error "Git clone failed."
+
+    # Export project path for script to use
+    PROJECT_PATH="$HOME/$folder_name"
+    export PROJECT_PATH
+
+    # Echo folder_name for script to capture if needed
+    echo "$folder_name"
+}
