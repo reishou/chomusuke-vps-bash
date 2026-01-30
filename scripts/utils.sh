@@ -378,9 +378,9 @@ clone_repository() {
     git clone "$git_url" "$HOME/$folder_name" || log_error "Git clone failed."
 
     # Export project path for script to use
-    PROJECT_PATH="$HOME/$folder_name"
-    export PROJECT_PATH
+    project_path="$HOME/$folder_name"
 
     # Echo folder_name for script to capture if needed
     echo "$folder_name"
+    echo "$project_path"
 }

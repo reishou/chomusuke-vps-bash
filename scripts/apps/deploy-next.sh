@@ -39,8 +39,17 @@ create_postgres_db
 # ────────────────────────────────────────────────
 # Step 3: Git repository URL, folder name, clone
 # ────────────────────────────────────────────────
-folder_name=$(clone_repository)
+readarray -t clone_output < <(clone_repository)
+
+folder_name="${clone_output[0]}"
+PROJECT_PATH="${clone_output[1]}"
+
+if [ -z "$PROJECT_PATH" ]; then
+    log_error "Failed to get project path from clone_repository."
+fi
+
 cd "$PROJECT_PATH" || log_error "Cannot cd into $PROJECT_PATH"
+
 
 # ────────────────────────────────────────────────
 # Step 4: Install dependencies and build with pnpm
