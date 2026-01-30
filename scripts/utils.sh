@@ -301,6 +301,7 @@ check_prerequisites() {
                         corepack prepare pnpm@latest --activate ;;
                     psql) sudo apt install -y postgresql ;;
                     rsync) sudo apt install -y rsync ;;
+                    go) sudo apt install -y golang-go ;;
                     *) log_error "No installation rule for $tool." ;;
                 esac
                 log_success "$tool installed."
