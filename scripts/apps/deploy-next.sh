@@ -112,7 +112,7 @@ domain=$(ask_domain)
 # ────────────────────────────────────────────────
 # Step 7: Root path & rsync to /var/www (reused from utils.sh)
 # ────────────────────────────────────────────────
-root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)/public")  # Reuse from utils.sh
+root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)")  # Reuse from utils.sh
 
 # ────────────────────────────────────────────────
 # Step 8: SSL handling (reused from utils.sh)
