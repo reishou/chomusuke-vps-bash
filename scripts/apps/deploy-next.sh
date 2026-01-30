@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # deploy-next.sh
 # Auto deploy script for Next.js applications
-# - Uses check_prerequisites and create_postgres_db from utils.sh
-# - Configures POSTGRES_URL and AUTH_SECRET in .env
+# - Checks prerequisites (nginx, pm2, node, pnpm, postgresql)
+# - Configures .env (POSTGRES_URL, AUTH_SECRET, AUTH_URL) BEFORE build
+# - Optional PostgreSQL DB and user creation
 # - Clones repo, installs deps, builds with pnpm
 # - Rsync build output to /var/www
 # - Uses utils.sh functions for domain, web root, SSL, Nginx config
@@ -21,18 +22,18 @@ fi
 REPO_ROOT="$(pwd)"
 
 echo -e "${GREEN}=== Next.js Auto Deploy Script ===${NC}"
-echo "This script will clone your Next.js repo, build the app,"
-echo "configure .env (POSTGRES_URL + AUTH_SECRET), set up Nginx and PM2."
+echo "This script will clone your Next.js repo, configure .env first,"
+echo "build the app, set up Nginx and PM2."
 echo "Running from repo root: $REPO_ROOT"
 echo ""
 
 # ────────────────────────────────────────────────
-# Step 1: Check and install prerequisites (reused from utils.sh)
+# Step 1: Check and install prerequisites
 # ────────────────────────────────────────────────
 check_prerequisites "nginx pm2 node pnpm psql"
 
 # ────────────────────────────────────────────────
-# Step 2: Optional - Create PostgreSQL DB and user (reused from utils.sh)
+# Step 2: Optional - Create PostgreSQL DB and user
 # ────────────────────────────────────────────────
 create_postgres_db
 
@@ -48,34 +49,21 @@ if [ -z "$PROJECT_PATH" ]; then
     log_error "Failed to get project path from clone_repository."
 fi
 
+log_info "Cloned to folder: $folder_name"
+log_info "Project path: $PROJECT_PATH"
+
 cd "$PROJECT_PATH" || log_error "Cannot cd into $PROJECT_PATH"
 
-
 # ────────────────────────────────────────────────
-# Step 4: Install dependencies and build with pnpm
+# Step 4: Configure .env BEFORE build (POSTGRES_URL, AUTH_SECRET, AUTH_URL)
 # ────────────────────────────────────────────────
-log_info "Installing dependencies with pnpm..."
-pnpm install || log_error "pnpm install failed."
-
-log_info "Building Next.js app..."
-pnpm run build || log_error "pnpm run build failed."
-
-# Verify build output
-if [ ! -d ".next" ] && [ ! -d "out" ]; then
-    log_error "Build output (.next or out) not found. Build may have failed."
-fi
-log_success "Next.js build completed."
-
-# ────────────────────────────────────────────────
-# Step 5: Configure .env (POSTGRES_URL and AUTH_SECRET)
-# ────────────────────────────────────────────────
-log_info "Configuring .env file..."
+log_info "Configuring .env file (before build)..."
 
 # Default POSTGRES_URL
 default_url="postgresql://next_user:Abcd@1234@127.0.0.1:5432/next"
 
 if ask_confirm "Do you want to configure POSTGRES_URL now? (default: $default_url)" "Y"; then
-    read -r -p "POSTGRES_URL (default: $default_url): " postgres_url
+    read -p "POSTGRES_URL (default: $default_url): " postgres_url
     postgres_url=${postgres_url:-$default_url}
     sed -i "s|^POSTGRES_URL=.*|POSTGRES_URL=$postgres_url|" .env || echo "POSTGRES_URL=$postgres_url" >> .env
 else
@@ -90,6 +78,27 @@ if ask_confirm "Do you want to generate AUTH_SECRET (32 chars random)?" "Y"; the
 else
     log_info "Skipping AUTH_SECRET generation."
 fi
+
+# AUTH_URL (thêm mới theo yêu cầu)
+read -r -p "AUTH_URL (default: empty, e.g. https://next.chomusuke.site): " auth_url
+auth_url=${auth_url:-""}
+sed -i "s|^AUTH_URL=.*|AUTH_URL=$auth_url|" .env || echo "AUTH_URL=$auth_url" >> .env
+log_info "AUTH_URL set to: $auth_url"
+
+# ────────────────────────────────────────────────
+# Step 5: Install dependencies and build with pnpm
+# ────────────────────────────────────────────────
+log_info "Installing dependencies with pnpm..."
+pnpm install || log_error "pnpm install failed."
+
+log_info "Building Next.js app..."
+pnpm run build || log_error "pnpm run build failed."
+
+# Verify build output
+if [ ! -d ".next" ] && [ ! -d "out" ]; then
+    log_error "Build output (.next or out) not found. Build may have failed."
+fi
+log_success "Next.js build completed."
 
 # ────────────────────────────────────────────────
 # Step 6: Domain (reused from utils.sh)
