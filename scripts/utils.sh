@@ -175,6 +175,9 @@ ask_domain() {
 # Setup web root: ask root path, rsync to /var/www, chown www-data
 # Params: $1 = current project path, $2 = folder_name, $2 = default_root
 setup_web_root() {
+    log_info "$1 - current project path"
+    log_info "$2 - folder name"
+    log_info "$3 - default root path"
     local project_path="$1"
     local folder_name="$2"
     local default_root="$3"
