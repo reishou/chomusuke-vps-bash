@@ -366,19 +366,19 @@ clone_repository() {
         log_error "Invalid folder name (cannot contain /, \\, *)." >&2
     fi
 
-    if [ -d "$folder_name" ]; then
+    project_path="$HOME/$folder_name"
+
+    if [ -d "$project_path" ]; then
         log_info "Folder $folder_name already exists." >&2
         if ask_confirm "Do you want to delete and re-clone?" "N"; then
-            rm -rf "$folder_name"
+            rm -rf "$project_path"
         else
             log_error "Aborted because folder already exists." >&2
         fi
     fi
 
     log_info "Cloning repository..." >&2
-    git clone "$git_url" "$folder_name" || log_error "Git clone failed." >&2
-
-    project_path="$(pwd)/$folder_name"
+    git clone "$git_url" "$project_path" || log_error "Git clone failed." >&2
 
     echo "$folder_name"
     echo "$project_path"

@@ -63,7 +63,7 @@ log_info "Configuring .env file (before build)..."
 default_url="postgresql://next_user:Abcd@1234@127.0.0.1:5432/next"
 
 if ask_confirm "Do you want to configure POSTGRES_URL now? (default: $default_url)" "Y"; then
-    read -p "POSTGRES_URL (default: $default_url): " postgres_url
+    read -r -p "POSTGRES_URL (default: $default_url): " postgres_url
     postgres_url=${postgres_url:-$default_url}
     sed -i "s|^POSTGRES_URL=.*|POSTGRES_URL=$postgres_url|" .env || echo "POSTGRES_URL=$postgres_url" >> .env
 else
