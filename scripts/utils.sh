@@ -314,8 +314,6 @@ check_prerequisites() {
 # Returns: nothing, but sets global vars db_name, db_user, db_password if created
 # Usage: create_postgres_db
 create_postgres_db() {
-    local db_created=false
-
     if ask_confirm "Do you want to create a PostgreSQL database and user?" "N"; then
         read -r -p "Enter DB name (default: next): " db_name
         db_name=${db_name:-next}
@@ -332,16 +330,9 @@ create_postgres_db() {
         sudo -u postgres psql -c "ALTER DATABASE $db_name OWNER TO $db_user;"
         sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $db_name TO $db_user;"
         log_success "PostgreSQL DB '$db_name' and user '$db_user' created (if not existing)."
-        db_created=true
     else
         log_info "Skipping DB creation (assume manual setup)."
     fi
-
-    # Export vars nếu cần dùng ở script chính
-    export DB_NAME="$db_name"
-    export DB_USER="$db_user"
-    export DB_PASSWORD="$db_password"
-    export DB_CREATED="$db_created"
 }
 
 # Clone Git repository with validation and folder handling
