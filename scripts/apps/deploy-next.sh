@@ -112,7 +112,7 @@ domain=$(ask_domain)
 # ────────────────────────────────────────────────
 # Step 7: Root path & rsync to /var/www (reused from utils.sh)
 # ────────────────────────────────────────────────
-root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)")  # Reuse from utils.sh
+setup_web_root "$(pwd)" "$folder_name" "$(pwd)"
 
 # ────────────────────────────────────────────────
 # Step 8: SSL handling (reused from utils.sh)
@@ -122,7 +122,7 @@ setup_ssl
 # ────────────────────────────────────────────────
 # Step 9: Generate Nginx config from template (reused from utils.sh)
 # ────────────────────────────────────────────────
-apply_nginx_config "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "$root_path" "$folder_name" "/var/www/$folder_name"
+apply_nginx_config "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "/var/www/$folder_name" "$folder_name" "/var/www/$folder_name"
 
 # ────────────────────────────────────────────────
 # Step 10: Start app with PM2 (using existing ecosystem.config.js)
@@ -153,7 +153,7 @@ if [ -n "${SSL_KEY_PATH:-}" ] || certbot certificates --domain "$domain" >/dev/n
 fi
 echo ""
 echo "App directory: $(pwd)"
-echo "Nginx root: $root_path"
+echo "Nginx root: /var/www/$folder_name"
 echo "Nginx config: /etc/nginx/sites-available/$folder_name.conf"
 echo "PM2 app name: $folder_name (check with pm2 status)"
 echo ""
