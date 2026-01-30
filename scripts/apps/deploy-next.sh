@@ -30,7 +30,7 @@ echo ""
 # ────────────────────────────────────────────────
 # Step 1: Check and install prerequisites
 # ────────────────────────────────────────────────
-check_prerequisites "nginx pm2 node pnpm psql"
+check_prerequisites "nginx node pnpm pm2 psql"
 
 # ────────────────────────────────────────────────
 # Step 2: Optional - Create PostgreSQL DB and user
