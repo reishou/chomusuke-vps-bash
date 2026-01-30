@@ -281,11 +281,16 @@ apply_nginx_config() {
 # Params: $1 = array of tools (space-separated string)
 # Example: check_prerequisites "nginx pm2 node pnpm psql"
 check_prerequisites() {
-    local tools=("$1")
+    local tools_str="$1"
+    IFS=' ' read -r -a tools <<< "$tools_str"
 
     log_info "Checking required tools: ${tools[*]}..."
 
     for tool in "${tools[@]}"; do
+        tool=$(echo "$tool" | xargs)
+
+        if [ -z "$tool" ]; then continue; fi
+
         if ! command -v "$tool" >/dev/null 2>&1; then
             log_info "$tool is not installed."
             if ask_confirm "Do you want to install $tool now? (requires sudo)" "Y"; then
@@ -302,11 +307,11 @@ check_prerequisites() {
                     psql) sudo apt install -y postgresql ;;
                     rsync) sudo apt install -y rsync ;;
                     go) sudo apt install -y golang-go ;;
-                    *) log_error "No installation rule for $tool." ;;
+                    *) log_error "No installation rule for $tool. Add case to utils.sh." ;;
                 esac
                 log_success "$tool installed."
             else
-                log_info "$tool is required. Script aborted."
+                log_error "$tool is required. Script aborted."
             fi
         else
             log_success "$tool is already installed."
