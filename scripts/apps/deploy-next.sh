@@ -93,7 +93,7 @@ log_info "AUTH_URL set to: $auth_url"
 # Step 5: Install dependencies and build with pnpm
 # ────────────────────────────────────────────────
 log_info "Installing dependencies with pnpm..."
-pnpm install || log_error "pnpm install failed."
+pnpm install --prod || log_error "pnpm install failed."
 
 log_info "Building Next.js app..."
 pnpm run build || log_error "pnpm run build failed."
@@ -112,7 +112,7 @@ domain=$(ask_domain)
 # ────────────────────────────────────────────────
 # Step 7: Root path & rsync to /var/www (reused from utils.sh)
 # ────────────────────────────────────────────────
-root_path=$(setup_web_root "$(pwd)" "$folder_name")
+root_path=$(setup_web_root "$(pwd)" "$folder_name" "$(pwd)/public")  # Reuse from utils.sh
 
 # ────────────────────────────────────────────────
 # Step 8: SSL handling (reused from utils.sh)
@@ -122,7 +122,7 @@ setup_ssl
 # ────────────────────────────────────────────────
 # Step 9: Generate Nginx config from template (reused from utils.sh)
 # ────────────────────────────────────────────────
-apply_nginx_config "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "$root_path" "$folder_name"
+apply_nginx_config_for "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "$root_path" "$folder_name"
 
 # ────────────────────────────────────────────────
 # Step 10: Start app with PM2 (using existing ecosystem.config.js)

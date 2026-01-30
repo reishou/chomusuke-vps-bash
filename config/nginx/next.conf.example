@@ -12,10 +12,19 @@ server {
     access_log /var/log/nginx/{FOLDER_NAME}.access.log;
     error_log  /var/log/nginx/{FOLDER_NAME}.error.log;
 
-    root {ROOT_PATH};
+    location ^~ /_next/static/ {
+        alias {ROOT_PATH}/.next/static/;
+        expires 1y;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+    }
 
-    # For static export (out/)
-    index index.html;
+    location = /favicon.ico {
+        alias {ROOT_PATH}/public/favicon.ico;
+        expires 1y;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+    }
 
     # Gzip compression
     gzip on;
@@ -34,16 +43,23 @@ server {
         application/atom+xml
         image/svg+xml;
 
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
     # Cache static assets (1 month)
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|pdf|zip|gz)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
         access_log off;
-    }
-
-    # SPA fallback for static export (Next.js out/)
-    location / {
-        try_files $uri $uri/ /index.html;
     }
 
     # Optional: Deny access to hidden files (security)
