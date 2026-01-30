@@ -93,7 +93,7 @@ log_info "AUTH_URL set to: $auth_url"
 # Step 5: Install dependencies and build with pnpm
 # ────────────────────────────────────────────────
 log_info "Installing dependencies with pnpm..."
-pnpm install --prod || log_error "pnpm install failed."
+pnpm install || log_error "pnpm install failed."
 
 log_info "Building Next.js app..."
 pnpm run build || log_error "pnpm run build failed."
