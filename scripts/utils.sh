@@ -302,7 +302,7 @@ check_prerequisites() {
                 esac
                 log_success "$tool installed."
             else
-                log_error "$tool is required. Script aborted."
+                log_info "$tool is required. Script aborted."
             fi
         else
             log_success "$tool is already installed."
@@ -336,51 +336,50 @@ create_postgres_db() {
 }
 
 # Clone Git repository with validation and folder handling
-# Returns: folder_name (echo) and sets PROJECT_PATH global
-# Usage: clone_repository
+# Outputs to stdout: only the folder_name (clean)
+# Logs (info/success/error) go to stderr (not captured in variable assignment)
 clone_repository() {
     local git_url
     local folder_name
     local default_folder
+    local project_path
 
-    read -r -p "Enter the Git repository URL: " git_url
+    read -r -p "Enter the Git repository URL: " git_url >&2
     git_url=$(echo "$git_url" | xargs)
-    [ -z "$git_url" ] && log_error "Git URL cannot be empty."
+    [ -z "$git_url" ] && log_error "Git URL cannot be empty." >&2
 
-    log_info "Verifying repository accessibility..."
+    log_info "Verifying repository accessibility..." >&2
     if ! git ls-remote --exit-code --heads "$git_url" >/dev/null 2>&1; then
         log_error "Cannot access repository. Possible causes:
   - Private repo → ensure SSH key is added to GitHub (run setup-vps-ssh.sh)
   - Typo in URL
   - HTTPS private repo needs token
-  - Network issue"
+  - Network issue" >&2
     fi
-    log_success "Repository accessible."
+    log_success "Repository accessible." >&2
 
     default_folder=$(basename "$git_url" .git)
-    read -r -p "Enter folder name to clone into (default: $default_folder): " folder_name
+    read -r -p "Enter folder name to clone into (default: $default_folder): " folder_name >&2
     folder_name=${folder_name:-$default_folder}
 
     if [[ "$folder_name" =~ [/\\*] ]] || [ -z "$folder_name" ]; then
-        log_error "Invalid folder name (cannot contain /, \\, *)."
+        log_error "Invalid folder name (cannot contain /, \\, *)." >&2
     fi
 
     if [ -d "$folder_name" ]; then
-        log_info "Folder $folder_name already exists."
+        log_info "Folder $folder_name already exists." >&2
         if ask_confirm "Do you want to delete and re-clone?" "N"; then
             rm -rf "$folder_name"
         else
-            log_error "Aborted because folder already exists."
+            log_error "Aborted because folder already exists." >&2
         fi
     fi
 
-    log_info "Cloning repository..."
-    git clone "$git_url" "$HOME/$folder_name" || log_error "Git clone failed."
+    log_info "Cloning repository..." >&2
+    git clone "$git_url" "$folder_name" || log_error "Git clone failed." >&2
 
-    # Export project path for script to use
-    project_path="$HOME/$folder_name"
+    project_path="$(pwd)/$folder_name"
 
-    # Echo folder_name for script to capture if needed
     echo "$folder_name"
     echo "$project_path"
 }
