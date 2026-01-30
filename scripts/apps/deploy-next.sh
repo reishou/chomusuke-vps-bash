@@ -59,6 +59,10 @@ cd "$PROJECT_PATH" || log_error "Cannot cd into $PROJECT_PATH"
 # ────────────────────────────────────────────────
 log_info "Configuring .env file (before build)..."
 
+if [ ! -f ".env" ]; then
+    cp .env.example .env || log_error ".env.example not found."
+fi
+
 # Default POSTGRES_URL
 default_url="postgresql://next_user:Abcd@1234@127.0.0.1:5432/next"
 
