@@ -122,7 +122,7 @@ setup_ssl
 # ────────────────────────────────────────────────
 # Step 9: Generate Nginx config from template (reused from utils.sh)
 # ────────────────────────────────────────────────
-apply_nginx_config "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "$root_path" "$folder_name"
+apply_nginx_config "$REPO_ROOT/config/nginx/next.conf.example" "$domain" "$root_path" "$folder_name" "/var/www/$folder_name"
 
 # ────────────────────────────────────────────────
 # Step 10: Start app with PM2 (using existing ecosystem.config.js)
