@@ -1,0 +1,27 @@
+# Go application systemd service template
+# Placeholders will be replaced by deploy script
+
+[Unit]
+Description={APP_NAME} Go Application
+After=network.target
+
+[Service]
+User={USER}
+Group={GROUP}
+WorkingDirectory={APP_PATH}
+ExecStart={APP_PATH}/app  # Binary name 'app' - change if your binary has different name
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier={APP_NAME}
+EnvironmentFile={APP_PATH}/.env  # Load .env if your Go app uses it (optional)
+
+# Optional: Limit resources
+LimitNOFILE=65535
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths={APP_PATH}/data {APP_PATH}/logs  # If your app writes to data/logs
+
+[Install]
+WantedBy=multi-user.target
