@@ -15,7 +15,7 @@ RestartSec=5
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier={APP_NAME}
-EnvironmentFile={APP_PATH}/.env  # Load .env if your Go app uses it (optional)
+EnvironmentFile=-{APP_PATH}/.env  # Load .env if your Go app uses it (optional)
 
 # Optional: Limit resources
 LimitNOFILE=65535
