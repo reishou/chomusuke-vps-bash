@@ -125,6 +125,10 @@ if ask_confirm "Do you want to create a systemd service for the Go app?" "Y"; th
     sudo sed -i "s|{GROUP}|www-data|g" "$GO_SERVICE"
     sudo sed -i "s|{APP_PATH}|$var_www_path|g" "$GO_SERVICE"
 
+    sudo mkdir -p /var/cache/go-build /var/cache/go-mod
+    sudo chown -R www-data:www-data /var/cache/go-build /var/cache/go-mod
+    sudo chmod -R 775 /var/cache/go-build /var/cache/go-mod
+
     sudo systemctl daemon-reload
     sudo systemctl enable "$folder_name.service"
     sudo systemctl start "$folder_name.service"

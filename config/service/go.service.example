@@ -16,6 +16,9 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier={APP_NAME}
 EnvironmentFile=-{APP_PATH}/.env  # Load .env if your Go app uses it (optional)
+Environment=GOCACHE=/var/cache/go-build
+Environment=GOMODCACHE=/var/cache/go-mod
+Environment=GOPATH=/var/cache/go
 
 # Optional: Limit resources
 LimitNOFILE=65535
