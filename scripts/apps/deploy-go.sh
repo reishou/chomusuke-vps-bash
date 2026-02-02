@@ -71,7 +71,15 @@ fi
 # ────────────────────────────────────────────────
 log_info "Building Go application..."
 
-go build -o app main.go || log_error "Go build failed."
+default_main="cmd/web/main.go"
+read -r -p "Enter the path to main Go file (default: $default_main): " main_path
+main_path=${main_path:-$default_main}
+
+if [ ! -f "$main_path" ]; then
+    log_error "Main Go file not found: $main_path"
+fi
+
+go build -o app "$main_path" || log_error "Go build failed."
 
 if [ ! -f "app" ]; then
     log_error "Go binary 'app' not found after build."
