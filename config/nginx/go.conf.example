@@ -40,11 +40,6 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # For static files served directly by Nginx or Go
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
     # Deny access to hidden files (security)
     location ~ /\. {
         deny all;
