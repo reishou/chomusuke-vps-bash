@@ -21,7 +21,6 @@ EnvironmentFile={APP_PATH}/.env  # Load .env if your Go app uses it (optional)
 LimitNOFILE=65535
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths={APP_PATH}/data {APP_PATH}/logs  # If your app writes to data/logs
 
 [Install]
 WantedBy=multi-user.target
