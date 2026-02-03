@@ -113,7 +113,7 @@ sudo mkdir -p "$var_www_path/dbs"
 sudo chown -R www-data:www-data "$var_www_path/dbs"
 sudo chmod -R 775 "$var_www_path/dbs"
 
-sudo -u www-data timeout 5 "$var_www_path/app" || true  # timeout 5s để tránh chạy mãi, ignore error
+sudo -u www-data timeout 5 "$var_www_path/app" || true
 
 sudo chown -R www-data:www-data "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
 sudo chmod -R 775 "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
