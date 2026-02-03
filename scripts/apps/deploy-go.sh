@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # deploy-go.sh
-# Auto deploy script for Go applications
+# Auto deploy script for Go applications (optimized for Pagoda starter like chomusuke-demo-go)
 # - Checks prerequisites (nginx, go)
-# - Clones repo, copies .env, builds Go binary
+# - Clones repo, copies .env, asks for main.go path, builds Go binary
 # - Rsync full app to /var/www
+# - Creates dbs/ folder + fixes permissions for SQLite, logs, cache
 # - Configures Nginx from template
 # - Handles SSL (manual or Certbot)
 # - Creates systemd service from template (optional)
@@ -98,6 +99,21 @@ domain=$(ask_domain)
 setup_web_root "$(pwd)" "$folder_name" "$(pwd)"
 
 # ────────────────────────────────────────────────
+# Step 6.5: Fix SQLite dbs folder + permissions (Pagoda-specific)
+# ────────────────────────────────────────────────
+log_info "Fixing SQLite dbs folder and permissions (for Pagoda starter)..."
+
+sudo mkdir -p "$var_www_path/dbs"
+
+sudo find . -maxdepth 2 -type f \( -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" \) -exec cp {} "$var_www_path/dbs/" \;
+
+sudo chown -R www-data:www-data "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
+sudo chmod -R 775 "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
+sudo chmod 664 "$var_www_path/dbs"/*.db "$var_www_path/dbs"/*.sqlite*
+
+log_success "SQLite dbs folder and permissions fixed."
+
+# ────────────────────────────────────────────────
 # Step 7: SSL handling (reused from utils.sh)
 # ────────────────────────────────────────────────
 setup_ssl
@@ -136,8 +152,8 @@ if ask_confirm "Do you want to create a systemd service for the Go app?" "Y"; th
 
     sudo systemctl daemon-reload
     sudo systemctl enable "$folder_name.service"
-    sudo systemctl start "$folder_name.service"
-    log_success "Systemd service created and started: $folder_name.service"
+    sudo systemctl restart "$folder_name.service"
+    log_success "Systemd service created, reloaded, and restarted: $folder_name.service"
     sudo systemctl status "$folder_name.service" --no-pager
 else
     log_info "Skipping systemd service. Run the app manually:"
