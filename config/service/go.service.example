@@ -9,13 +9,13 @@ After=network.target
 User={USER}
 Group={GROUP}
 WorkingDirectory={APP_PATH}
-ExecStart={APP_PATH}/app  # Binary name 'app' - change if your binary has different name
+ExecStart={APP_PATH}/app
 Restart=always
 RestartSec=5
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier={APP_NAME}
-EnvironmentFile=-{APP_PATH}/.env  # Load .env if your Go app uses it (optional)
+EnvironmentFile=-{APP_PATH}/.env
 Environment=GOCACHE=/var/cache/go-build
 Environment=GOMODCACHE=/var/cache/go-mod
 Environment=GOPATH=/var/cache/go
