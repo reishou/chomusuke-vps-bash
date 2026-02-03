@@ -103,7 +103,7 @@ setup_web_root "$(pwd)" "$folder_name" "$(pwd)"
 # ────────────────────────────────────────────────
 log_info "Fixing SQLite dbs folder and permissions (for Pagoda starter)..."
 
-sudo mkdir -p "$var_www_path/dbs"
+sudo mkdir -p "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
 
 sudo find . -maxdepth 2 -type f \( -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" \) -exec cp {} "$var_www_path/dbs/" \;
 
