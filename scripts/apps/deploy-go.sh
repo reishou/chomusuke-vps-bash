@@ -107,6 +107,14 @@ sudo mkdir -p "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
 
 sudo find . -maxdepth 2 -type f \( -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" \) -exec cp {} "$var_www_path/dbs/" \;
 
+log_info "Initializing SQLite DB (run app once to create dbs/app.db if needed)..."
+
+sudo mkdir -p "$var_www_path/dbs"
+sudo chown -R www-data:www-data "$var_www_path/dbs"
+sudo chmod -R 775 "$var_www_path/dbs"
+
+sudo -u www-data timeout 5 "$var_www_path/app" || true  # timeout 5s để tránh chạy mãi, ignore error
+
 sudo chown -R www-data:www-data "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
 sudo chmod -R 775 "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
 sudo chmod 664 "$var_www_path/dbs"/*.db "$var_www_path/dbs"/*.sqlite*
