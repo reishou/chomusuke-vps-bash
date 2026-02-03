@@ -99,29 +99,6 @@ domain=$(ask_domain)
 setup_web_root "$(pwd)" "$folder_name" "$(pwd)"
 
 # ────────────────────────────────────────────────
-# Step 6.5: Fix SQLite dbs folder + permissions (Pagoda-specific)
-# ────────────────────────────────────────────────
-log_info "Fixing SQLite dbs folder and permissions (for Pagoda starter)..."
-
-sudo mkdir -p "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
-
-sudo find . -maxdepth 2 -type f \( -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" \) -exec cp {} "$var_www_path/dbs/" \;
-
-log_info "Initializing SQLite DB (run app once to create dbs/app.db if needed)..."
-
-sudo mkdir -p "$var_www_path/dbs"
-sudo chown -R www-data:www-data "$var_www_path/dbs"
-sudo chmod -R 775 "$var_www_path/dbs"
-
-sudo -u www-data timeout 5 "$var_www_path/app" || true
-
-sudo chown -R www-data:www-data "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
-sudo chmod -R 775 "$var_www_path/dbs" "$var_www_path/storage" "$var_www_path/.cache"
-sudo chmod 664 "$var_www_path/dbs"/*.db "$var_www_path/dbs"/*.sqlite*
-
-log_success "SQLite dbs folder and permissions fixed."
-
-# ────────────────────────────────────────────────
 # Step 7: SSL handling (reused from utils.sh)
 # ────────────────────────────────────────────────
 setup_ssl
