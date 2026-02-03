@@ -132,9 +132,6 @@ if ask_confirm "Do you want to create a systemd service for the Go app?" "Y"; th
     sudo chmod -R 775 /var/cache/go-build /var/cache/go-mod
     log_success "Go cache directories created and fixed."
 
-    sudo sed -i "/\[Service\]/a Environment=GOCACHE=/var/cache/go-build" "$GO_SERVICE"
-    sudo sed -i "/\[Service\]/a Environment=GOMODCACHE=/var/cache/go-mod" "$GO_SERVICE"
-
     sudo systemctl daemon-reload
     sudo systemctl enable "$folder_name.service"
     sudo systemctl restart "$folder_name.service"
